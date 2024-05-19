@@ -1,5 +1,6 @@
 import { Punto } from "../../../models/Punto.js";
 import { Punto_Usuario } from "../../../models/Punto_Usuario.js";
+import { Sequelize } from "sequelize";
 
 export default function PrecilajeEndPoints(app){
     app.post('/agregar-punto', async (req, res) => {

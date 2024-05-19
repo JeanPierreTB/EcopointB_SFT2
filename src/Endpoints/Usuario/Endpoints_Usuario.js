@@ -136,6 +136,25 @@ export default function usuariosEndpoints(app){
         res.status(500).send({ mensaje: "Error interno en el servidor", res: false });
       }
     });
+
+    app.post('/obtener-usuario',async(req,res)=>{
+      try{
+        const usuario=await Usuario.findOne({
+          where:{
+            id:req.body.id
+          }
+        })
+    
+        if(!usuario){
+          return res.status(404).send({ mensaje: "Usuario no encontrado", res: false });
+        }
+    
+        res.status(200).send({ mensaje: "Usuario encontrado", res: true,usuario:usuario });
+      }catch(e){
+        console.error("Error al realizar la operación: ", e);
+        res.status(500).send({ mensaje: "Error interno en el servidor", res: false });
+      }
+    })
     
       
 

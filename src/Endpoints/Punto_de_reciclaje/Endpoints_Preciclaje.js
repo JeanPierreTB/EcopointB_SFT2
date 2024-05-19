@@ -52,7 +52,8 @@ export default function PrecilajeEndPoints(app){
           // Buscar el punto
           const punto = await Punto.findOne({
             where: {
-              id: req.body.id
+              id: req.body.id,
+              tipo:req.body.tipo
             }
           });
       

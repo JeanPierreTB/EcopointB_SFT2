@@ -1,6 +1,7 @@
 import { Punto } from "../../../models/Punto.js";
 import { Punto_Usuario } from "../../../models/Punto_Usuario.js";
 import { Sequelize } from "sequelize";
+import { Usuario } from "../../../models/Usuario.js";
 
 export default function PrecilajeEndPoints(app){
     app.post('/agregar-punto', async (req, res) => {
@@ -102,6 +103,179 @@ export default function PrecilajeEndPoints(app){
           res.status(500).send({ mensaje: "Error interno en el servidor", res: false });
         }
       });
+
+      app.post('/punto-cancelado',async(req,res)=>{
+        try{
+          console.log("body:",req.body)
+          const punto=await Punto.findOne({
+            where:{
+              lugar:req.body.lugar
+            }
+          })
+          if(!punto){
+            return res.status(404).send({ mensaje: "Punto no encontrado", res: false });
+          }
+      
+          const Punto_Usuario1=await Punto_Usuario.destroy({
+            where:{
+              PuntoId:punto.id,
+            }
+          })
+      
+          
+      
+          res.status(200).send({ mensaje: "Punto Cancelado", res: true,punto:punto });
+      
+      
+          /*const usuario=await Usuario.findOne({
+            where:{
+              id:req.body.id
+            }
+          })
+      
+          if(!usuario){
+            return res.status(404).send({ mensaje: "Usuario no encontrado", res: false });
+          }
+      
+      
+          const usuarioActualizado = await Usuario.update(
+            { 
+              puntaje: usuario.puntaje + punto.puntos,
+              puntosrecilados:usuario.puntosrecilados+1
+            
+            },
+            {
+              where: {
+                id:req.body.id
+              }
+            }
+          );
+          
+      
+          if(!usuarioActualizado){
+            return res.status(404).send({ mensaje: "Usuario no encontrado", res: false });
+          }*/
+    
+          
+      
+        }catch(e){
+          console.error("Error al realizar la operación: ", e);
+          res.status(500).send({ mensaje: "Error interno en el servidor", res: false });
+        }
+      })
+
+
+      app.post('/punto-cancelado-qr',async(req,res)=>{
+        try{
+      
+          if(req.body.lugarseleccionado===req.body.lugar){
+            const punto=await Punto.findOne({
+              where:{
+                latitud:req.body.latitud,
+                longitud:req.body.longitud,
+                lugar:req.body.lugar,
+                tipo:req.body.tipo
+              }
+              
+            })
+        
+            if(!punto){
+              return res.status(404).send({ mensaje: "Punto no encontrado", res: false });
+        
+            }
+      
+            const usuario=await Usuario.findOne({
+              where:{
+                id:req.body.id
+              }
+            })
+        
+            if(!usuario){
+              return res.status(404).send({ mensaje: "Usuario no encontrado", res: false });
+            }
+      
+            const cantidad=req.body.cantidad;
+            const usuariop=usuario.puntaje;
+            let puntajenuevo;
+      
+            switch(punto.tipo){
+              case "Papel":
+                puntajenuevo=usuariop+(cantidad*3);
+                break;
+              case "Plástico":
+                puntajenuevo=usuariop+(cantidad*3);
+                break;
+              case "Metal":
+                puntajenuevo=usuariop+(cantidad*3);
+                break;
+              case "Baterias":
+                puntajenuevo=usuariop+(cantidad*2);
+                break;
+              case "Ropa":
+                puntajenuevo=usuariop+(cantidad*4)
+                break;
+      
+            }
+        
+        
+            const usuarioActualizado = await Usuario.update(
+              { 
+                puntaje: puntajenuevo
+              
+              },
+              {
+                where: {
+                  id:req.body.id
+                }
+              }
+            );
+            
+        
+            if(!usuarioActualizado){
+              return res.status(404).send({ mensaje: "Usuario no encontrado", res: false });
+            }
+      
+            const fechaHoy = new Date();
+            const fechaHoySinHora = fechaHoy.toISOString().split('T')[0];
+      
+            const Punto_Usuario1=await Punto_Usuario.update(
+              { 
+                realizado:true,
+                PuntoId:null,
+                fecha:fechaHoySinHora,
+                cantidad:req.body.cantidad
+              
+              },
+              {
+                where: {
+                  PuntoId:punto.id,
+                }
+              }
+              
+              
+              
+            )
+      
+            /*where:{
+                PuntoId:punto.id,
+              } */
+        
+      
+            res.status(200).send({ mensaje: "Punto Realizado", res: true,punto:punto });
+      
+          }
+      
+          else{
+            return res.status(404).send({ mensaje: "Lugares no coinciden", res: false });
+          }
+          
+      
+      
+        }catch(e){
+          console.error("Error al realizar la operación: ", e);
+          res.status(500).send({ mensaje: "Error interno en el servidor", res: false });
+        }
+      })
       
 
 

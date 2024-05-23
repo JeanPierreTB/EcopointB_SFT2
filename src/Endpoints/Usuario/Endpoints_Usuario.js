@@ -1,4 +1,6 @@
 import { Usuario } from "../../../models/Usuario.js";
+import { Punto_Usuario } from "../../../models/Punto_Usuario.js";
+import {Recompesa} from "../../../models/Recompesa.js";
 import qrcode from 'qrcode';
 
 
@@ -155,6 +157,61 @@ export default function usuariosEndpoints(app){
         res.status(500).send({ mensaje: "Error interno en el servidor", res: false });
       }
     })
+
+
+    app.post('/notas-usuario',async(req,res)=>{
+      try{
+        const usuario=await Usuario.findOne({
+          where:{
+            id:req.body.id
+          }
+        })
+    
+        if(!usuario){
+          return res.status(404).send({ mensaje: "Usuario no encontrado", res: false });
+        }
+    
+        console.log(usuario)
+    
+    
+        const puntosreciclados=await Punto_Usuario.count({
+          
+          where:{
+            UsuarioId:usuario.id,
+            realizado:true
+          }
+        })
+    
+        /*const objetivoscumplidos=await Objetivo_Usuario.count({
+          where:{
+            UsuarioId:usuario.id,
+          }
+        })*/
+    
+    
+    
+        const recompesaobtenidas=await Recompesa.count({
+          where:{
+            idUsuario:req.body.id,
+          }
+        })
+    
+        const usuarios=await Usuario.findAll({
+          order:[['puntaje','DESC']]
+        })
+    
+        const poscionusuario=usuarios.findIndex(usuario=>(usuario.id===req.body.id))
+    
+    
+    
+        res.status(200).send({ mensaje: "Campos encontrados", res: true,puntosreciclados:puntosreciclados,puntaje:usuario.puntaje,recompesaobtenidas:recompesaobtenidas,usuarios:(poscionusuario+1)});
+    
+      }catch(e){
+        console.error("Error al realizar la operación: ", e);
+        res.status(500).send({ mensaje: "Error interno en el servidor", res: false });
+      }
+    })
+    
     
       
 
